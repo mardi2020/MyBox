@@ -25,9 +25,14 @@ public class FileController {
 
     private final FileService fileService;
 
-    @RequestMapping(value = "/download/{fileName}", method = RequestMethod.GET)
-    public ResponseEntity<Resource>  downloadFromStorage(@PathVariable String fileName) {
-        Blob file = fileService.downloadFile(fileName);
+    @RequestMapping(value = "/download/{fileId}", method = RequestMethod.GET)
+    public ResponseEntity<Resource>  downloadFromStorage(@PathVariable String fileId) {
+        File targetFile = fileService.findFileById(fileId);
+        System.out.println("targetFile = " + targetFile);
+        String fileName = targetFile.getOriginalFileName();
+        String editableFileName = targetFile.getFileName();
+        String filePath = targetFile.getPath();
+        Blob file = fileService.downloadFile(filePath + "/" + fileName);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         file.downloadTo(os);
@@ -35,7 +40,7 @@ public class FileController {
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.getContentType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""+ editableFileName + "\"")
                 .body(new ByteArrayResource(filebytes));
     }
 
@@ -59,7 +64,7 @@ public class FileController {
     @PostMapping("/delete/{objectId}")
     public String deleteFileFromStorage(@PathVariable String objectId) {
         File file = fileService.findFileById(objectId);
-        String fileName = file.getFileName();
+        String fileName = file.getOriginalFileName();
         String filePath = file.getPath();
         fileService.deleteFileFromDB(objectId);
         fileService.deleteObjectFromStorage(filePath + "/" + fileName);
@@ -107,6 +112,20 @@ public class FileController {
     public String deleteDirectory(@PathVariable String objectId) {
         fileService.deleteFileFromDB(objectId);
 
+        return "redirect:/";
+    }
+
+    @PostMapping("/updateFileName/{objectId}")
+    public String updateFileName(@PathVariable String objectId,
+                                 FileUpdateDto updateFile) {
+        String fileName = updateFile.getFileName();
+        fileService.updateFileName(objectId, fileName);
+        return "redirect:/";
+    }
+
+    @GetMapping("/updateFileName/{objectId}")
+    public String updateFileNamePage(@PathVariable String objectId, Model model) {
+        model.addAttribute("updateFile", new FileUpdateDto());
         return "redirect:/";
     }
 }

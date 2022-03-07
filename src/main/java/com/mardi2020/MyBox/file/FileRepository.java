@@ -90,4 +90,26 @@ public class FileRepository {
         update.set("FileSize", size);
         mongoTemplate.updateFirst(query, update, File.class, "File");
     }
+
+    public String findDuplicateFile(String fileName, String filePath) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("fileName").is(fileName));
+        query.addCriteria(Criteria.where("path").is(filePath));
+
+        query.fields().include("id");
+        return mongoTemplate.findOne(query, String.class, "File");
+    }
+
+    /**
+     * 원하는 이름을 지정해 이름 수정
+     * @param id 해당 도큐먼트의 id
+     * @param fileName 파일 이름
+     */
+    public void updateFileNameInDB(String id, String fileName) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("id").is(id));
+        Update update = new Update();
+        update.set("fileName", fileName);
+        mongoTemplate.updateFirst(query, update, File.class, "File");
+    }
 }

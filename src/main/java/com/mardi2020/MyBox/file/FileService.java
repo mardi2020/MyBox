@@ -40,10 +40,18 @@ public class FileService {
      * @throws IOException
      */
     public BlobInfo uploadFile(MultipartFile multipartFile, String fileName, String filePath, String parentId) throws IOException {
+        /* 이미 그 경로에 같은 이름의 파일이 있는지 검사*/
+        String duplicateFileId = fileRepository.findDuplicateFile(fileName, filePath);
+        if (duplicateFileId != null) {
+            Random random = new Random();
+            fileName = random.nextInt() + fileName;
+        }
+        System.out.println("fileName = " + fileName);
         FileUploadDto fileUploadDto = new FileUploadDto();
         fileUploadDto.setFileName(fileName);
         fileUploadDto.setFileSize(multipartFile.getSize());
         fileUploadDto.setPath(filePath);
+        fileUploadDto.setOriginalFileName(fileName);
 
         SimpleDateFormat format = new SimpleDateFormat ("yyyy-MM-dd HH:mm");
         Date time = new Date();
@@ -82,8 +90,8 @@ public class FileService {
         Date time = new Date();
         String today = format.format(time);
         folder.setCreatedDate(today);
-
         folder.setFileName(folderName);
+        folder.setOriginalFileName(folderName);
 
         File parent = findFileById(parentId);
         folder.getParent().add(parentId);
@@ -103,10 +111,15 @@ public class FileService {
         return fileRepository.findFolderAll();
     }
 
+    /**
+     *
+     * @param objectId 삭제할 타겟 파일
+     */
     public void deleteFileFromDB(String objectId) {
         File targetFile = findFileById(objectId);
         long targetFileSize = targetFile.getFileSize();
 
+        /* 삭제할 폴더의 id가 포함된 파일과 폴더도 같이 삭제 */
         List<File> files = findFileAll();
         for (File file : files) {
             for (String id : file.getParent()) {
@@ -116,7 +129,7 @@ public class FileService {
                 }
             }
         }
-
+        /* 상위 폴더의 크기 수정 */
         for (String id : targetFile.getParent()) {
             File fileById = findFileById(id);
             fileRepository.updateFileSize(id, fileById.getFileSize() - targetFileSize);
@@ -133,4 +146,7 @@ public class FileService {
         storage.delete("mybox_bucket", fileName);
     }
 
+    public void updateFileName(String id, String fileName) {
+        fileRepository.updateFileNameInDB(id, fileName);
+    }
 }

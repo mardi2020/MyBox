@@ -35,4 +35,6 @@ public class File {
     private String path;
 
     private boolean isRoot = false;
+
+    private String originalFileName;
 }

@@ -35,4 +35,5 @@ public class FileUploadDto {
 
     private boolean isRoot = false;
 
+    private String originalFileName;
 }

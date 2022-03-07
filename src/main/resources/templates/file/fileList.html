@@ -6,6 +6,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <script src="/static/js/fileUploader.js"></script>
     <script src="/static/js/getFolderId.js"></script>
+    <script src="../../static/js/fileUploader.js"></script>
+    <script src="../../static/js/getFolderId.js"></script>
 </head>
 <body>
     <div>
@@ -16,7 +18,8 @@
                 <button th:id="idButton"
                         onclick="passOnData()" th:text="${folder.path} + '/' + ${folder.fileName}"
                         th:data-path="${folder.path} +'/' +${folder.fileName}"
-                        th:data-id="${folder.id}"></button>
+                        th:data-id="${folder.id}">
+                </button>
             </td>
         </tr>
         </div>
@@ -24,13 +27,14 @@
         <form id="uploadForm" enctype="multipart/form-data">
             <input type="file" id="fileInput">
         </form>
-        <div>
+        <div class="row">
             <label>경로:</label>
             <input id="filePath" type="text" th:name="filePath" placeholder="저장할 경로 지정" readonly>
+            <button onclick="upload();window.location.reload()">
+                파일 업로드
+            </button>
         </div>
-        <button onclick="upload();window.location.reload()">
-            파일 업로드
-        </button>
+
         <p id="resultUploadPath"></p>
     </div>
     <hr>
@@ -51,16 +55,20 @@
     <div>
         <table>
             <thead>
-            <th>경로</th><th>파일이름</th>
-            <th>생성일자</th><th>파일크기</th>
-            <th>다운로드</th><th>삭제</th>
+            <th>경로</th>
+            <th>파일이름</th>
+            <th>생성일자</th>
+            <th>파일크기</th>
+            <th>다운로드</th>
+            <th>삭제</th>
+            <th>이름 수정</th>
             </thead>
             <tbody>
             <tr th:each="file : ${fileList}">
                 <td th:text="${file.path}"></td><td th:text="${file.fileName}"></td>
                 <td th:text="${file.createdDate}"></td><td th:text="${file.fileSize}"></td>
                 <td>
-                    <a th:if="${file.isDirectory} == false" th:href="@{'/download/{fileName}'(fileName=${file.fileName})}" type="submit">다운로드</a>
+                    <a th:if="${file.isDirectory} == false" th:href="@{'/download/{fileId}'(fileId=${file.id})}" type="submit">다운로드</a>
                 </td>
                 <td th:if="${file.isDirectory} == false">
                     <form th:action="@{'/delete/{objectId}'(objectId=${file.id})}" th:method="delete">
@@ -71,6 +79,14 @@
                     <form th:action="@{'/deleteDirectory/{objectId}'(objectId=${file.id})}" th:method="delete">
                         <button type="submit">폴더 삭제</button>
                     </form>
+                </td>
+                <td th:if="${file.isDirectory} == false">
+                    <div class="row">
+                    <form th:action="@{'/updateFileName/{objectId}'(objectId=${file.id})}" th:object="${updateFile}" th:method="post">
+                        <input type="text" name="fileName">
+                        <button type="submit">이름 바꾸기</button>
+                    </form>
+                    </div>
                 </td>
             </tr>
             </tbody>
