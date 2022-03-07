@@ -60,9 +60,9 @@ public class FileController {
     public String deleteFileFromStorage(@PathVariable String objectId) {
         File file = fileService.findFileById(objectId);
         String fileName = file.getFileName();
-
+        String filePath = file.getPath();
         fileService.deleteFileFromDB(objectId);
-        fileService.deleteObjectFromStorage(fileName);
+        fileService.deleteObjectFromStorage(filePath + "/" + fileName);
 
         return "redirect:/";
     }

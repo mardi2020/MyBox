@@ -69,7 +69,7 @@ public class FileService {
         fileRepository.uploadFileToStorage(fileUploadDto);
 
         return storage.create(
-                BlobInfo.newBuilder("mybox_bucket", fileName)
+                BlobInfo.newBuilder("mybox_bucket", filePath + "/" + fileName)
                         .setAcl(new ArrayList<>(Collections.singletonList(Acl.of(Acl.User.ofAllAuthenticatedUsers(), Acl.Role.READER))))
                         .build(),
                 multipartFile.getBytes()
