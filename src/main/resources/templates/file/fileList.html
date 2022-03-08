@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head xmlns:th="http://www.thymeleaf.org">
+<head xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
     <meta charset="UTF-8">
     <title>File List</title>
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
@@ -10,6 +10,15 @@
     <script src="../../static/js/getFolderId.js"></script>
 </head>
 <body>
+    <div>
+        <h3 sec:authorize="isAuthenticated()">반갑습니다. <span sec:authentication="name"></span>님!</h3>
+        <h4 sec:authorize="isAuthenticated()">할당 용량 <span th:text="${MaxSize}"></span>MB</h4>
+        <h4 sec:authorize="isAuthenticated()">사용 용량 <span th:text="${CurrentSize}"></span>Bytes</h4>
+        <a sec:authorize="isAnonymous()" th:href="@{/login}">로그인</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/logout}">로그아웃</a>
+    </div>
+    <hr>
+    <div sec:authorize="isAuthenticated()">
     <div>
         <label>경로 선택</label>
         <div>
@@ -30,7 +39,8 @@
         <div class="row">
             <label>경로:</label>
             <input id="filePath" type="text" th:name="filePath" placeholder="저장할 경로 지정" readonly>
-            <button onclick="upload();window.location.reload()">
+            <input type="hidden" id="uploadCsrf" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button onclick="upload()">
                 파일 업로드
             </button>
         </div>
@@ -91,6 +101,7 @@
             </tr>
             </tbody>
         </table>
+    </div>
     </div>
 </body>
 </html>

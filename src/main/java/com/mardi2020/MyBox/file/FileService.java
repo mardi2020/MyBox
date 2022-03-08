@@ -1,6 +1,8 @@
 package com.mardi2020.MyBox.file;
 
 import com.google.cloud.storage.*;
+import com.mardi2020.MyBox.user.User;
+import com.mardi2020.MyBox.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,9 +19,7 @@ public class FileService {
 
     private final Storage storage;
 
-    public List<File> findFileAll() {
-        return fileRepository.findFileAll();
-    }
+    private final UserRepository userRepository;
 
     public List<File> findFileAllByUserId(String userId) {
         return fileRepository.findFileAllByUserId(userId);
@@ -39,7 +39,7 @@ public class FileService {
      * @return store in gcs
      * @throws IOException
      */
-    public BlobInfo uploadFile(MultipartFile multipartFile, String fileName, String filePath, String parentId) throws IOException {
+    public BlobInfo uploadFile(MultipartFile multipartFile, String fileName, String filePath, String parentId, String email) throws IOException {
         /* 이미 그 경로에 같은 이름의 파일이 있는지 검사*/
         String duplicateFileId = fileRepository.findDuplicateFile(fileName, filePath);
         if (duplicateFileId != null) {
@@ -72,9 +72,13 @@ public class FileService {
             File p = findFileById(parentObjectId);
             fileRepository.updateFileSize(parentObjectId, p.getFileSize() + multipartFile.getSize());
         }
-        /* 로그인 기능 구현하면 변경 */
-        fileUploadDto.setUserId("testaccount123");
+        fileUploadDto.setUserId(email);
         fileRepository.uploadFileToStorage(fileUploadDto);
+
+        /* 유저의 사용 용량 증가 */
+        User user = userRepository.getUserByEmail(email);
+        Long userCurSize = user.getCurrentSize();
+        userRepository.updateUserCurrentSize(email, userCurSize + multipartFile.getSize());
 
         return storage.create(
                 BlobInfo.newBuilder("mybox_bucket", filePath + "/" + fileName)
@@ -107,8 +111,8 @@ public class FileService {
         fileRepository.createFolder(folder);
     }
 
-    public List<File> findFolderAll() {
-        return fileRepository.findFolderAll();
+    public List<File> findFolderAll(String userId) {
+        return fileRepository.findFolderAll(userId);
     }
 
     /**
@@ -120,7 +124,7 @@ public class FileService {
         long targetFileSize = targetFile.getFileSize();
 
         /* 삭제할 폴더의 id가 포함된 파일과 폴더도 같이 삭제 */
-        List<File> files = findFileAll();
+        List<File> files = fileRepository.findFileAll();
         for (File file : files) {
             for (String id : file.getParent()) {
                 if(id.equals(objectId)) {

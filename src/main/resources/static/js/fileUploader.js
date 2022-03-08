@@ -14,11 +14,12 @@ function upload() {
     }
     const filePath = $("#filePath").val();
     const formData = new FormData();
+    const uploadCsrf = $("#uploadCsrf").val();
     formData.append("uploadFile", fileInput.files[0]);
     formData.append("uploadFileName", fileInput.files[0].name)
     formData.append("filePath", filePath);
     formData.append("parentId", parentId);
-
+    formData.append("_csrf", uploadCsrf);
     $.ajax({
         type: "POST",
         url: "/upload",
@@ -29,6 +30,7 @@ function upload() {
             const message = rtn.data.values[0];
             console.log("message: ", message)
             $("#resultUploadPath").text(message.uploadFilePath)
+            window.location.reload();
         },
         err: function (err) {
             console.log("err:", err)

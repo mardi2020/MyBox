@@ -2,6 +2,8 @@ package com.mardi2020.MyBox.file;
 
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobInfo;
+import com.mardi2020.MyBox.user.User;
+import com.mardi2020.MyBox.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -15,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 
 
@@ -25,10 +28,12 @@ public class FileController {
 
     private final FileService fileService;
 
+    private final UserService userService;
+
     @RequestMapping(value = "/download/{fileId}", method = RequestMethod.GET)
     public ResponseEntity<Resource>  downloadFromStorage(@PathVariable String fileId) {
         File targetFile = fileService.findFileById(fileId);
-        System.out.println("targetFile = " + targetFile);
+
         String fileName = targetFile.getOriginalFileName();
         String editableFileName = targetFile.getFileName();
         String filePath = targetFile.getPath();
@@ -55,9 +60,10 @@ public class FileController {
     public ResponseEntity uploadToStorage(@RequestParam String uploadFileName,
                                           @RequestParam MultipartFile uploadFile,
                                           @RequestParam(value = "filePath") String filePath,
-                                          @RequestParam(value = "parentId") String parentId) throws IOException {
-        BlobInfo file = fileService.uploadFile(uploadFile, uploadFileName, filePath, parentId);
-
+                                          @RequestParam(value = "parentId") String parentId,
+                                          Principal principal) throws IOException {
+        String email = principal.getName();
+        BlobInfo file = fileService.uploadFile(uploadFile, uploadFileName, filePath, parentId, email);
         return ResponseEntity.ok(file.toString());
     }
 
@@ -93,13 +99,22 @@ public class FileController {
      * @return view page
      */
     @GetMapping("/")
-    public String FileListPage(Model model) {
-        List<File> fileList = fileService.findFileAllByUserId("testaccount123");
-        List<File> folderList = fileService.findFolderAll();
-
-        model.addAttribute("fileList", fileList);
-        model.addAttribute("folderList", folderList);
-
+    public String FileListPage(Model model, Principal principal) {
+        try {
+            String email = principal.getName();
+            User user = userService.getUserByEmail(email);
+            Long userCurrentSize = user.getCurrentSize();
+            Long userMaxSize = user.getMaxSize() / (1024 * 1024);
+            List<File> fileList = fileService.findFileAllByUserId(email);
+            List<File> folderList = fileService.findFolderAll(email);
+            System.out.println("fileList = " + fileList);
+            model.addAttribute("MaxSize", userMaxSize);
+            model.addAttribute("CurrentSize", userCurrentSize);
+            model.addAttribute("fileList", fileList);
+            model.addAttribute("folderList", folderList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return "/file/fileList";
     }
 

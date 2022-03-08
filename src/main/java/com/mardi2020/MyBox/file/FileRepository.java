@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -22,9 +21,10 @@ public class FileRepository {
         return mongoTemplate.findAll(File.class, "File");
     }
 
-    public List<File> findFolderAll() {
+    public List<File> findFolderAll(String userId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("isDirectory").is(true));
+        query.addCriteria(Criteria.where("userId").is(userId));
 
         return mongoTemplate.find(query, File.class, "File");
     }
