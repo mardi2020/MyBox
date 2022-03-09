@@ -2,7 +2,6 @@ package com.mardi2020.MyBox.user;
 
 import com.mardi2020.MyBox.file.File;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,8 +34,13 @@ public class UserService implements UserDetailsService {
         user.setCreatedDate(today);
         user.setMaxSize(1073741824L); // 1gb
 
-        //db에 저장
-        userRepository.registerUser(user);
+        // email 유효성 검사
+        Email email = new Email();
+        boolean check = email.checkValidEmail(user.getEmail());
+        if(check) {
+            //db에 저장
+            userRepository.registerUser(user);
+        }
     }
 
     @Override
