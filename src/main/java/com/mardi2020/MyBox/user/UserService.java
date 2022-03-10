@@ -165,10 +165,23 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public void updatePassword(User user) {
+    public void updatePassword(UpdatePwUserDto user, HttpServletResponse response) throws IOException {
         String email = user.getEmail();
-        String pw = user.getPassword();
+        String pwBefore = user.getPasswordBefore();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        userRepository.updatePassword(passwordEncoder.encode(pw), email);
+        User targetUser = userRepository.getUserByEmail(email);
+        response.setContentType("text/html;charset=utf-8");
+        PrintWriter out = response.getWriter();
+
+        if(passwordEncoder.matches(pwBefore, targetUser.getPassword())){
+            String pw = user.getPasswordAfter();
+            userRepository.updatePassword(passwordEncoder.encode(pw), email);
+
+            out.print("비밀번호를 재설정하였습니다.");
+        }
+        else {
+            out.print("기존 비밀번호가 틀립니다.");
+        }
+        out.close();
     }
 }

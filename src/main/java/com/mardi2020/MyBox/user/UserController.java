@@ -18,10 +18,9 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/")
-    public String loginUserPage() {
+    public String loginUserGet() {
         return "/user/login";
     }
-
 
     @GetMapping("/register")
     public String registerUserPage(Model model) {
@@ -54,9 +53,8 @@ public class UserController {
 
     @ResponseBody
     @PostMapping("/updatePassword")
-    public Boolean updatePasswordPost(@ModelAttribute User user) {
+    public void updatePasswordPost(@ModelAttribute UpdatePwUserDto user, HttpServletResponse response) throws IOException {
         System.out.println("user = " + user);
-        userService.updatePassword(user);
-        return true;
+        userService.updatePassword(user, response);
     }
 }

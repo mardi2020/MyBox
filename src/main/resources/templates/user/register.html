@@ -1,19 +1,55 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>SignUp</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style type="text/css">
+    .mybtn{
+      width:150px;
+      height:40px;
+      padding:0;
+      display:inline;
+      border-radius: 4px;
+      background: #212529;
+      color: #fff;
+      magin-top: 20px;
+      border: solid 2px #212529;
+      transition: all 0.5s ease-in-out 0s;
+    }
+    .mybtn:hover .mybtn:focus {
+      background: white;
+      color: #212529;
+      text-decoration: none;
+    }
+  </style>
+
+  <title>회원가입</title>
 </head>
 <body>
-<h1>회원가입</h1>
-<hr>
+<div class="w3-content w3-container w3-margin-top">
+  <div class="w3-container w3-card-4 w3-auto" style="width: 382px;height: 456.3px;">
+    <div class="w3-center w3-large w3-margin-top">
+      <h3>회원가입</h3>
+    </div>
 <form action="/register" th:object="${user}" method="post">
   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-  <input type="text" th:field="*{email}" placeholder="이메일 입력">
-  <input type="password" th:field="*{password}" placeholder="비밀번호">
-  <input type="text" th:field="*{userName}" placeholder="닉네임">
-  <button type="submit">가입 하기</button>
+  <label>이메일</label>
+  <input class="w3-input" type="text" th:field="*{email}" placeholder="이메일 입력">
+  <br>
+  <label>비밀번호</label>
+  <input class="w3-input" type="password" th:field="*{password}" placeholder="비밀번호">
+  <br>
+  <label>사용자 이름</label>
+  <input class="w3-input" type="text" th:field="*{userName}" placeholder="닉네임">
+  <br>
+  <button type="submit" class="w3-button w3-hover-white w3-ripple w3-margin-top w3-round mybtn">
+    가입 하기
+  </button>
 </form>
+    <button type="button" onclick="history.go(-1);" class="w3-button w3-hover-white w3-ripple w3-margin-top w3-round mybtn">로그인으로</button>
+  </div>
+</div>
 </body>
 </html>
