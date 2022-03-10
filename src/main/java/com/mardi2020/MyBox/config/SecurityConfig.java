@@ -37,13 +37,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/**").permitAll()
                 .and()
                 .formLogin()     // 로그인 설정
-                .loginPage("/login")      // 커스텀 login 페이지를 사용
-                .defaultSuccessUrl("/")      // 로그인 성공 시 이동할 페이지
+                .loginPage("/")      // 커스텀 login 페이지를 사용
+                .defaultSuccessUrl("/files")      // 로그인 성공 시 이동할 페이지
                 .permitAll()
                 .and()
                 .logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .logoutSuccessUrl("/login")
+                .logoutSuccessUrl("/")
                 .invalidateHttpSession(true)    // 세션 초기화
                 .and()
                 .exceptionHandling();

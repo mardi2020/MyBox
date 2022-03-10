@@ -121,7 +121,12 @@ public class FileService {
      */
     public void deleteFileFromDB(String objectId) {
         File targetFile = findFileById(objectId);
-        long targetFileSize = targetFile.getFileSize();
+        Long targetFileSize = targetFile.getFileSize();
+        /* 유저의 사용 용량에서 타겟 파일의 크기만큼 빼주기 */
+        String email = targetFile.getUserId();
+        User user = userRepository.getUserByEmail(email);
+        Long curSize = user.getCurrentSize();
+        userRepository.subtractFileSize(curSize - targetFileSize, email);
 
         /* 삭제할 폴더의 id가 포함된 파일과 폴더도 같이 삭제 */
         List<File> files = fileRepository.findFileAll();

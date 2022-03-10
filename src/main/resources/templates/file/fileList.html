@@ -3,7 +3,7 @@
 <head xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
     <meta charset="UTF-8">
     <title>File List</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-latest.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <script src="/static/js/fileUploader.js"></script>
     <script src="/static/js/getFolderId.js"></script>
     <script src="../../static/js/fileUploader.js"></script>
@@ -14,7 +14,7 @@
         <h3 sec:authorize="isAuthenticated()">반갑습니다. <span sec:authentication="name"></span>님!</h3>
         <h4 sec:authorize="isAuthenticated()">할당 용량 <span th:text="${MaxSize}"></span>MB</h4>
         <h4 sec:authorize="isAuthenticated()">사용 용량 <span th:text="${CurrentSize}"></span>Bytes</h4>
-        <a sec:authorize="isAnonymous()" th:href="@{/login}">로그인</a>
+        <a sec:authorize="isAnonymous()" th:href="@{/}">로그인</a>
         <a sec:authorize="isAuthenticated()" th:href="@{/logout}">로그아웃</a>
     </div>
     <hr>
@@ -55,7 +55,7 @@
                 <input th:id="parent" type="text" placeholder="생성할 폴더 경로" name="parent" readonly>
                 <input type="hidden" th:id="parentId" name="parentId">
                 <input th:id="folderName" type="text" placeholder="폴더 명" name="folder">
-                <button onclick="passOnData2();window.location.reload()">생성 완료</button>
+                <button onclick="passOnData2()">생성 완료</button>
             </div>
         </div>
     </div>

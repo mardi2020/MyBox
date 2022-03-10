@@ -26,7 +26,7 @@ public class File {
 
     private String modified;
 
-    private long fileSize = 0L;
+    private Long fileSize = 0L;
 
     private boolean isDirectory = false;
 

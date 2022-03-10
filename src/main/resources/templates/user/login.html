@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
     <body>
-        <form action="/login" method="post" class="user">
+        <form action="/" method="post" class="user">
             <div class="row">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <input type="text" name="username" placeholder="Enter your id...">
@@ -11,5 +11,7 @@
         </form>
         <hr>
         <a th:href="@{/register}">회원 가입</a>
+        <a th:href="@{/findPassword}">비밀번호 찾기</a>
+        <a th:href="@{/updatePassword}">비밀번호 바꾸기</a>
     </body>
 </html>

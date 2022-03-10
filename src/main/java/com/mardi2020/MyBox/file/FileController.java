@@ -75,7 +75,7 @@ public class FileController {
         fileService.deleteFileFromDB(objectId);
         fileService.deleteObjectFromStorage(filePath + "/" + fileName);
 
-        return "redirect:/";
+        return "redirect:/files";
     }
 
     @GetMapping("/delete/{objectId}")
@@ -98,7 +98,7 @@ public class FileController {
      * @param model 모델
      * @return view page
      */
-    @GetMapping("/")
+    @GetMapping("/files")
     public String FileListPage(Model model, Principal principal) {
         try {
             String email = principal.getName();
@@ -120,14 +120,14 @@ public class FileController {
 
     @GetMapping("/deleteFolder/{objectId}")
     public String deleteFolderPage(@PathVariable String objectId) {
-        return "redirect:/";
+        return "redirect:/files";
     }
 
     @PostMapping("/deleteDirectory/{objectId}")
     public String deleteDirectory(@PathVariable String objectId) {
         fileService.deleteFileFromDB(objectId);
 
-        return "redirect:/";
+        return "redirect:/files";
     }
 
     @PostMapping("/updateFileName/{objectId}")
@@ -135,12 +135,12 @@ public class FileController {
                                  FileUpdateDto updateFile) {
         String fileName = updateFile.getFileName();
         fileService.updateFileName(objectId, fileName);
-        return "redirect:/";
+        return "redirect:/files";
     }
 
     @GetMapping("/updateFileName/{objectId}")
     public String updateFileNamePage(@PathVariable String objectId, Model model) {
         model.addAttribute("updateFile", new FileUpdateDto());
-        return "redirect:/";
+        return "redirect:/files";
     }
 }

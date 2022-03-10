@@ -82,4 +82,19 @@ public class UserRepository {
         mongoTemplate.updateFirst(query, update, User.class, collectionName);
     }
 
+    public void subtractFileSize(Long filesize, String email) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("email").is(email));
+        Update update = new Update();
+        update.set("currentSize", filesize);
+        mongoTemplate.updateFirst(query, update, User.class, collectionName);
+    }
+
+    public void updatePassword(String password, String email) {
+        Query query = new Query();
+        Update update = new Update();
+        query.addCriteria(Criteria.where("email").is(email));
+        update.set("password", password);
+        mongoTemplate.updateFirst(query, update, User.class, collectionName);
+    }
 }
