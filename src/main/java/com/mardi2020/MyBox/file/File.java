@@ -37,4 +37,8 @@ public class File {
     private boolean isRoot = false;
 
     private String originalFileName;
+
+    private List<String> children = new ArrayList<>(); // directory일경우만
+
+    private String subdirectory;
 }

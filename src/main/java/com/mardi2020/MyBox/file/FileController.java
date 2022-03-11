@@ -86,9 +86,10 @@ public class FileController {
     @PostMapping("/createFolder")
     public ResponseEntity createFolder(@RequestParam(value = "filePath") String filePath,
                                        @RequestParam(value = "folder") String folderName,
-                                       @RequestParam(value = "parentId") String parentId) {
-
-        fileService.createFolder(filePath, folderName, parentId);
+                                       @RequestParam(value = "parentId") String parentId,
+                                       Principal principal) {
+        String email = principal.getName();
+        fileService.createFolder(filePath, folderName, parentId, email);
 
         return ResponseEntity.ok("created "+ folderName);
     }
@@ -99,19 +100,21 @@ public class FileController {
      * @return view page
      */
     @GetMapping("/files")
-    public String FileListPage(Model model, Principal principal) {
+    public String FileListPage(@RequestParam(defaultValue = "") String path, Model model, Principal principal) {
         try {
             String email = principal.getName();
             User user = userService.getUserByEmail(email);
             Long userCurrentSize = user.getCurrentSize();
             Long userMaxSize = user.getMaxSize() / (1024 * 1024);
-            List<File> fileList = fileService.findFileAllByUserId(email);
+//            List<File> fileList = fileService.findFileAllByUserId(email);
+            List<File> fileList = fileService.findFileIndir(email, path);
             List<File> folderList = fileService.findFolderAll(email);
-            System.out.println("fileList = " + fileList);
+
             model.addAttribute("MaxSize", userMaxSize);
             model.addAttribute("CurrentSize", userCurrentSize);
             model.addAttribute("fileList", fileList);
             model.addAttribute("folderList", folderList);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -142,5 +145,10 @@ public class FileController {
     public String updateFileNamePage(@PathVariable String objectId, Model model) {
         model.addAttribute("updateFile", new FileUpdateDto());
         return "redirect:/files";
+    }
+
+    @PostMapping("/files/{filePath}")
+    public boolean filePathPost(@PathVariable String filePath) {
+        return true;
     }
 }

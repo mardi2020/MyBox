@@ -21,11 +21,15 @@ function passOnData2() {
     var folderName = $("#folderName")[0].value
     var parent = $("#parent")[0].value
     var parentId = $("#parentId")[0].value
+    var csrf = $("#createCsrf")[0].value
     const formData = new FormData();
+
+    console.log("folderName "+folderName);
 
     formData.append("filePath", parent);
     formData.append("folder", folderName)
     formData.append("parentId", parentId);
+    formData.append("_csrf", csrf)
     $.ajax({
         type: "POST",
         url: "/createFolder",

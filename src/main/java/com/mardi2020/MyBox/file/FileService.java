@@ -40,18 +40,31 @@ public class FileService {
      * @throws IOException
      */
     public BlobInfo uploadFile(MultipartFile multipartFile, String fileName, String filePath, String parentId, String email) throws IOException {
+        System.out.println("fileName = " + fileName);
+        System.out.println("filePath = " + filePath);
+        System.out.println();
         /* 이미 그 경로에 같은 이름의 파일이 있는지 검사*/
         String duplicateFileId = fileRepository.findDuplicateFile(fileName, filePath);
         if (duplicateFileId != null) {
             Random random = new Random();
             fileName = random.nextInt() + fileName;
         }
-        System.out.println("fileName = " + fileName);
         FileUploadDto fileUploadDto = new FileUploadDto();
         fileUploadDto.setFileName(fileName);
         fileUploadDto.setFileSize(multipartFile.getSize());
-        fileUploadDto.setPath(filePath);
         fileUploadDto.setOriginalFileName(fileName);
+
+        StringBuilder newFilePath = new StringBuilder();
+
+        if(filePath.length() > 0 && filePath.charAt(0) == '/') {
+            for (int i = 1; i < filePath.length(); i++) {
+                newFilePath.append(filePath.charAt(i));
+            }
+            fileUploadDto.setPath(newFilePath.toString());
+        }
+        else {
+            fileUploadDto.setPath(filePath);
+        }
 
         SimpleDateFormat format = new SimpleDateFormat ("yyyy-MM-dd HH:mm");
         Date time = new Date();
@@ -80,6 +93,20 @@ public class FileService {
         Long userCurSize = user.getCurrentSize();
         userRepository.updateUserCurrentSize(email, userCurSize + multipartFile.getSize());
 
+        /* 바로 위 부모 디렉토리에 현재 추가된 파일의 id 추가 */
+        List<String> children = file.getChildren();
+
+        if(filePath.charAt(0) == '/'){
+            File target = fileRepository.findFileByPathAndName(newFilePath.toString(), fileName);
+            children.add(target.getId().toHexString());
+        }
+        else{
+            File target = fileRepository.findFileByPathAndName(filePath, fileName);
+            children.add(target.getId().toHexString());
+        }
+
+        fileRepository.updateNearestParentChildList(parentId, children);
+
         return storage.create(
                 BlobInfo.newBuilder("mybox_bucket", filePath + "/" + fileName)
                         .setAcl(new ArrayList<>(Collections.singletonList(Acl.of(Acl.User.ofAllAuthenticatedUsers(), Acl.Role.READER))))
@@ -88,7 +115,7 @@ public class FileService {
         );
     }
 
-    public void createFolder(String filePath, String folderName, String parentId) {
+    public void createFolder(String filePath, String folderName, String parentId, String email) {
         FileUploadDto folder = new FileUploadDto();
         SimpleDateFormat format = new SimpleDateFormat ("yyyy-MM-dd HH:mm");
         Date time = new Date();
@@ -106,9 +133,35 @@ public class FileService {
         }
 
         folder.setDirectory(true);
-        folder.setUserId("testaccount123");
-        folder.setPath(filePath);
+        folder.setUserId(email);
+        StringBuilder newFilePath = new StringBuilder();
+
+        if(filePath.length() > 0 && filePath.charAt(0) == '/') {
+            for (int i = 1; i < filePath.length(); i++) {
+                newFilePath.append(filePath.charAt(i));
+            }
+            System.out.println("newFilePath = " + newFilePath);
+            folder.setPath(newFilePath.toString());
+        }
+        else {
+            folder.setPath(filePath);
+        }
+
         fileRepository.createFolder(folder);
+
+        /* 현재 추가된 폴더를 상위 폴더의 children에 넣어줌 */
+        List<String> children = parent.getChildren();
+        if(filePath.charAt(0) == '/'){
+            File target = fileRepository.findFileByPathAndName(newFilePath.toString(), folderName);
+            children.add(target.getId().toHexString());
+        }
+        else{
+            File target = fileRepository.findFileByPathAndName(filePath, folderName);
+            children.add(target.getId().toHexString());
+        }
+
+        fileRepository.updateNearestParentChildList(parentId, children);
+
     }
 
     public List<File> findFolderAll(String userId) {
@@ -157,5 +210,10 @@ public class FileService {
 
     public void updateFileName(String id, String fileName) {
         fileRepository.updateFileNameInDB(id, fileName);
+    }
+
+
+    public List<File> findFileIndir(String userId, String filePath){
+        return fileRepository.findFileInDir(userId, filePath);
     }
 }

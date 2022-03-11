@@ -3,9 +3,7 @@
 <head xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
     <meta charset="UTF-8">
     <title>File List</title>
-    <script src="https://code.jquery.com/jquery-latest.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
-    <script src="/static/js/fileUploader.js"></script>
-    <script src="/static/js/getFolderId.js"></script>
+    <script src="https://code.jquery.com/jquery-latest.js"></script>
     <script src="../../static/js/fileUploader.js"></script>
     <script src="../../static/js/getFolderId.js"></script>
 </head>
@@ -52,6 +50,7 @@
         <label>디렉토리 생성</label>
         <div>
             <div th:id="createFolderForm">
+                <input type="hidden" th:id="createCsrf" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <input th:id="parent" type="text" placeholder="생성할 폴더 경로" name="parent" readonly>
                 <input type="hidden" th:id="parentId" name="parentId">
                 <input th:id="folderName" type="text" placeholder="폴더 명" name="folder">
@@ -65,7 +64,6 @@
     <div>
         <table>
             <thead>
-            <th>경로</th>
             <th>파일이름</th>
             <th>생성일자</th>
             <th>파일크기</th>
@@ -75,8 +73,13 @@
             </thead>
             <tbody>
             <tr th:each="file : ${fileList}">
-                <td th:text="${file.path}"></td><td th:text="${file.fileName}"></td>
-                <td th:text="${file.createdDate}"></td><td th:text="${file.fileSize}"></td>
+                <td>
+                    <a th:if="${file.isDirectory} == true and ${file.isRoot} == true" th:text="${file.fileName}" th:href="@{'/files?path={filePath}'(filePath = ${file.path} + ${file.fileName})}"></a>
+                    <a th:if="${file.isDirectory} == true and ${file.isRoot} == false" th:text="${file.fileName}" th:href="@{'/files?path={filePath}'(filePath = ${file.path} +'/'+${file.fileName})}"></a>
+                    <a th:if="${file.isDirectory} == false" th:text="${file.fileName}"></a>
+                </td>
+                <td th:text="${file.createdDate}"></td>
+                <td th:text="${file.fileSize}"></td>
                 <td>
                     <a th:if="${file.isDirectory} == false" th:href="@{'/download/{fileId}'(fileId=${file.id})}" type="submit">다운로드</a>
                 </td>

@@ -1,6 +1,7 @@
 package com.mardi2020.MyBox.file;
 
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -31,7 +32,6 @@ public class FileRepository {
 
     public List<File> findFileAllByUserId(String userId) {
         Query query = new Query();
-
         query.addCriteria(Criteria.where("userId").is(userId));
         query.with(Sort.by(Sort.Direction.ASC, "path"));
         return mongoTemplate.find(query, File.class, "File");
@@ -111,5 +111,33 @@ public class FileRepository {
         Update update = new Update();
         update.set("fileName", fileName);
         mongoTemplate.updateFirst(query, update, File.class, "File");
+    }
+
+    /**
+     * 바로 상위 폴더ㅇㅔ 추가된 파일, 폴더의 id 저장
+     */
+    public void updateNearestParentChildList(String ParentId, List<String> children) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("id").is(ParentId));
+        Update update = new Update();
+        update.set("children", children);
+        mongoTemplate.updateFirst(query, update, File.class, "File");
+    }
+
+    public File findFileByPathAndName(String path, String name) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("fileName").is(name));
+        query.addCriteria(Criteria.where("path").is(path));
+
+        return mongoTemplate.findOne(query, File.class, "File");
+    }
+
+    public List<File> findFileInDir(String userId, String filePath) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("userId").is(userId));
+//        query.addCriteria(Criteria.where("isDirectory").is(true));
+//        query.addCriteria(Criteria.where("fileName").is(fileName));
+        query.addCriteria(Criteria.where("path").is(filePath));
+        return mongoTemplate.find(query, File.class, "File");
     }
 }

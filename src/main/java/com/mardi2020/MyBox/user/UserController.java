@@ -31,9 +31,8 @@ public class UserController {
     @PostMapping("/register")
     public String registerUser(UserJoinDto user) {
         userService.userJoin(user);
-        User userdto = userService.getUserByEmail(user.getEmail());
         userService.createUserRoot(user.getEmail());
-        return "redirect:/login";
+        return "redirect:/";
     }
 
     @GetMapping("/findPassword")
