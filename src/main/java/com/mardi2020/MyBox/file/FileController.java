@@ -35,8 +35,10 @@ public class FileController {
         File targetFile = fileService.findFileById(fileId);
 
         String fileName = targetFile.getOriginalFileName();
+        System.out.println("fileName = " + fileName);
         String editableFileName = targetFile.getFileName();
         String filePath = targetFile.getPath();
+        System.out.println("filePath = " + filePath);
         Blob file = fileService.downloadFile(filePath + "/" + fileName);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -150,5 +152,11 @@ public class FileController {
     @PostMapping("/files/{filePath}")
     public boolean filePathPost(@PathVariable String filePath) {
         return true;
+    }
+
+
+    @GetMapping("/updateFilePath/{objectId}")
+    public void updateFilePathGet(@PathVariable String objectId) {
+
     }
 }

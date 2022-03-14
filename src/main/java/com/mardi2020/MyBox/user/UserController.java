@@ -29,9 +29,9 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String registerUser(UserJoinDto user) {
+    public String registerUser(UserJoinDto user) throws Exception {
         userService.userJoin(user);
-        userService.createUserRoot(user.getEmail());
+        userService.createUserRoot(user.getEmail(), user.getUserName());
         return "redirect:/";
     }
 
@@ -53,7 +53,6 @@ public class UserController {
     @ResponseBody
     @PostMapping("/updatePassword")
     public void updatePasswordPost(@ModelAttribute UpdatePwUserDto user, HttpServletResponse response) throws IOException {
-        System.out.println("user = " + user);
         userService.updatePassword(user, response);
     }
 }

@@ -40,15 +40,13 @@ public class FileService {
      * @throws IOException
      */
     public BlobInfo uploadFile(MultipartFile multipartFile, String fileName, String filePath, String parentId, String email) throws IOException {
-        System.out.println("fileName = " + fileName);
-        System.out.println("filePath = " + filePath);
-        System.out.println();
         /* 이미 그 경로에 같은 이름의 파일이 있는지 검사*/
         String duplicateFileId = fileRepository.findDuplicateFile(fileName, filePath);
         if (duplicateFileId != null) {
             Random random = new Random();
             fileName = random.nextInt() + fileName;
         }
+
         FileUploadDto fileUploadDto = new FileUploadDto();
         fileUploadDto.setFileName(fileName);
         fileUploadDto.setFileSize(multipartFile.getSize());
@@ -65,6 +63,14 @@ public class FileService {
         else {
             fileUploadDto.setPath(filePath);
         }
+
+        String[] nameAndExtension = fileName.split("\\.");
+        if (nameAndExtension[0].length() > 7) {
+            nameAndExtension[0] = nameAndExtension[0].substring(0, 7);
+            nameAndExtension[0] += "...";
+        }
+        fileUploadDto.setShowFileName(nameAndExtension[0]);
+        fileUploadDto.setExtension(nameAndExtension[1]);
 
         SimpleDateFormat format = new SimpleDateFormat ("yyyy-MM-dd HH:mm");
         Date time = new Date();
@@ -113,6 +119,16 @@ public class FileService {
                         .build(),
                 multipartFile.getBytes()
         );
+    }
+
+    public void moveFile(String filePath, String fileId) {
+        // 해당 파일의 정보 가져오기
+        File targetFile = fileRepository.getFileById(fileId);
+
+        // 파일의 경로를 새로운 경로로 바꾸기
+        targetFile.setPath(filePath);
+
+        fileRepository.updateFilePathByFileId(filePath, fileId);
     }
 
     public void createFolder(String filePath, String folderName, String parentId, String email) {
@@ -216,4 +232,7 @@ public class FileService {
     public List<File> findFileIndir(String userId, String filePath){
         return fileRepository.findFileInDir(userId, filePath);
     }
+
+
+
 }

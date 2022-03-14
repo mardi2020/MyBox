@@ -41,4 +41,8 @@ public class File {
     private List<String> children = new ArrayList<>(); // directory일경우만
 
     private String subdirectory;
+
+    private String extension;
+
+    private String showFileName; // 10글자 제한으로
 }

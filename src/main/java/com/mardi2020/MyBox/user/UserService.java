@@ -1,6 +1,7 @@
 package com.mardi2020.MyBox.user;
 
 import com.mardi2020.MyBox.file.File;
+import com.mardi2020.MyBox.file.FileRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.mail.HtmlEmail;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
@@ -27,32 +29,47 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
+    private final FileRepository fileRepository;
+
     @Value("${email}")
     private String hostSTMPid;
 
     @Value("${password}")
     private String hostSTMPPassword;
 
-    private final Long MaxSize = 1073741824L;
+    private final Long maxSize = 1073741824L;
 
     @Transactional
-    public void userJoin(UserJoinDto user) {
+    public void userJoin(UserJoinDto user) throws Exception{
         // password 암호화
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User targetUser = new User();
+
+        /* 중복인지 검사 */
+        if(userRepository.checkDuplicatedEmail(user.getEmail()) != null) {
+            throw new Exception("이미 존재하는 이메일입니다.");
+        }
+
+        if(userRepository.checkDuplicatedUserName(user.getUserName()) != null) {
+            throw new Exception("이미 존재하는 이름입니다.");
+        }
+
+        targetUser.setEmail(user.getEmail());
+        targetUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        targetUser.setUserName(user.getUserName());
 
         SimpleDateFormat format = new SimpleDateFormat ("yyyy-MM-dd HH:mm");
         Date time = new Date();
         String today = format.format(time);
-        user.setCreatedDate(today);
-        user.setMaxSize(MaxSize); // 1gb
+        targetUser.setCreatedDate(today);
+        targetUser.setMaxSize(maxSize); // 1gb
 
         // email 유효성 검사
         Email email = new Email();
         boolean check = email.checkValidEmail(user.getEmail());
         if(check) {
             //db에 저장
-            userRepository.registerUser(user);
+            userRepository.registerUser(targetUser);
         }
     }
 
@@ -75,7 +92,7 @@ public class UserService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
 
-    public void createUserRoot(String email) {
+    public void createUserRoot(String email, String userName) {
         File file = new File();
         SimpleDateFormat format = new SimpleDateFormat ("yyyy-MM-dd HH:mm");
         Date time = new Date();
@@ -85,14 +102,15 @@ public class UserService implements UserDetailsService {
         file.setUserId(email);
         file.setRoot(true);
         file.setDirectory(true);
-        file.setFileName("cloud");
-        file.setOriginalFileName("cloud");
+        file.setFileName(userName + " cloud");
+        file.setOriginalFileName(userName + " cloud");
         file.setPath("");
-        userRepository.createUserRootDirectory(file);
+        fileRepository.createUserRootDirectory(file);
 
-        File rootDirectory = userRepository.getRootId(email);
+        File rootDirectory = fileRepository.getRootId(email);
+        System.out.println("rootDirectory = " + rootDirectory);
         String id = rootDirectory.getId().toHexString();
-        userRepository.addParentId(id);
+        fileRepository.addParentId(id);
     }
 
     public User getUserByEmail(String email){
@@ -183,5 +201,34 @@ public class UserService implements UserDetailsService {
             out.print("기존 비밀번호가 틀립니다.");
         }
         out.close();
+    }
+
+    public void loginUser(HttpSession session, UserLoginDto userLoginDto) throws Exception {
+        String email = userLoginDto.getEmail();
+        String password = userLoginDto.getPassword();
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        User targetUser = userRepository.getUserByEmail(email);
+
+        if (passwordEncoder.matches(password, targetUser.getPassword())) {
+            session.setAttribute("user", targetUser);
+            session.setAttribute("isLogOn", true);
+        } else {
+            throw new Exception("아이디와 패스워드가 일치하지 않습니다.");
+        }
+    }
+
+    public void deleteUser(String email) throws Exception {
+        if(userRepository.getUserByEmail(email) == null) {
+            throw new Exception("등록되지 않은 사용자입니다.");
+        } else {
+            userRepository.deleteUser(email);
+        }
+    }
+
+    public void editUserInfo(String email, UserUpdateDto user){
+        String password = user.getPassword();
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.updateUserInfo(email, user);
     }
 }

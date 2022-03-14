@@ -7,9 +7,6 @@ import org.springframework.data.annotation.Id;
 @Data
 public class UserLoginDto {
 
-    @Id
-    private ObjectId id;
-
     private String email;
 
     private String password;

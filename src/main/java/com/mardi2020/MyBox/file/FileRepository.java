@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -18,8 +19,10 @@ public class FileRepository {
 
     private final MongoTemplate mongoTemplate;
 
+    private final String collectionName = "File";
+
     public List<File> findFileAll() {
-        return mongoTemplate.findAll(File.class, "File");
+        return mongoTemplate.findAll(File.class, collectionName);
     }
 
     public List<File> findFolderAll(String userId) {
@@ -27,68 +30,47 @@ public class FileRepository {
         query.addCriteria(Criteria.where("isDirectory").is(true));
         query.addCriteria(Criteria.where("userId").is(userId));
 
-        return mongoTemplate.find(query, File.class, "File");
+        return mongoTemplate.find(query, File.class, collectionName);
     }
 
     public List<File> findFileAllByUserId(String userId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("userId").is(userId));
         query.with(Sort.by(Sort.Direction.ASC, "path"));
-        return mongoTemplate.find(query, File.class, "File");
+        return mongoTemplate.find(query, File.class, collectionName);
     }
 
     @Transactional
     public void uploadFileToStorage(FileUploadDto fileUploadDto) {
-        Query query = new Query();
-
-        query.addCriteria(Criteria.where("fileName").is(fileUploadDto.getFileName()));
-        query.addCriteria(Criteria.where("userId").is(fileUploadDto.getUserId()));
-        query.addCriteria(Criteria.where("createdDate").is(fileUploadDto.getCreatedDate()));
-        query.addCriteria(Criteria.where("fileSize").is(fileUploadDto.getFileSize()));
-        query.addCriteria(Criteria.where("type").is(fileUploadDto.getType()));
-        query.addCriteria(Criteria.where("path").is(fileUploadDto.getPath()));
-        query.addCriteria(Criteria.where("parent").is(fileUploadDto.getParent()));
-
-        mongoTemplate.insert(fileUploadDto, "File");
+        mongoTemplate.insert(fileUploadDto, collectionName);
     }
 
     @Transactional
     public void createFolder(FileUploadDto folder){
-        Query query = new Query();
-
-        query.addCriteria(Criteria.where("fileName").is(folder.getFileName()));
-        query.addCriteria(Criteria.where("userId").is(folder.getUserId()));
-
-        query.addCriteria(Criteria.where("parent").is(folder.getParent()));
-
-        query.addCriteria(Criteria.where("createdDate").is(folder.getCreatedDate()));
-        query.addCriteria(Criteria.where("modified").is(folder.getModified()));
-        query.addCriteria(Criteria.where("fileSize").is(folder.getFileSize()));
-        query.addCriteria(Criteria.where("path").is(folder.getPath()));
-        query.addCriteria(Criteria.where("isDirectory").is(folder.isDirectory()));
-
-        mongoTemplate.insert(folder, "File");
+        mongoTemplate.insert(folder, collectionName);
     }
 
+    @Transactional
     public void deleteFile(String objectId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("id").is(objectId));
-        mongoTemplate.findAndRemove(query, File.class, "File");
+        mongoTemplate.findAndRemove(query, File.class, collectionName);
     }
 
     public File getFileById(String obejctId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("id").is(obejctId));
-        return mongoTemplate.findOne(query, File.class, "File");
+        return mongoTemplate.findOne(query, File.class, collectionName);
     }
 
+    @Transactional
     public void updateFileSize(String objectId, long size) {
         Query query = new Query();
         query.addCriteria(Criteria.where("id").is(objectId));
 
         Update update = new Update();
         update.set("FileSize", size);
-        mongoTemplate.updateFirst(query, update, File.class, "File");
+        mongoTemplate.updateFirst(query, update, File.class, collectionName);
     }
 
     public String findDuplicateFile(String fileName, String filePath) {
@@ -97,7 +79,7 @@ public class FileRepository {
         query.addCriteria(Criteria.where("path").is(filePath));
 
         query.fields().include("id");
-        return mongoTemplate.findOne(query, String.class, "File");
+        return mongoTemplate.findOne(query, String.class, collectionName);
     }
 
     /**
@@ -105,23 +87,25 @@ public class FileRepository {
      * @param id 해당 도큐먼트의 id
      * @param fileName 파일 이름
      */
+    @Transactional
     public void updateFileNameInDB(String id, String fileName) {
         Query query = new Query();
         query.addCriteria(Criteria.where("id").is(id));
         Update update = new Update();
         update.set("fileName", fileName);
-        mongoTemplate.updateFirst(query, update, File.class, "File");
+        mongoTemplate.updateFirst(query, update, File.class, collectionName);
     }
 
     /**
      * 바로 상위 폴더ㅇㅔ 추가된 파일, 폴더의 id 저장
      */
+    @Transactional
     public void updateNearestParentChildList(String ParentId, List<String> children) {
         Query query = new Query();
         query.addCriteria(Criteria.where("id").is(ParentId));
         Update update = new Update();
         update.set("children", children);
-        mongoTemplate.updateFirst(query, update, File.class, "File");
+        mongoTemplate.updateFirst(query, update, File.class, collectionName);
     }
 
     public File findFileByPathAndName(String path, String name) {
@@ -129,15 +113,47 @@ public class FileRepository {
         query.addCriteria(Criteria.where("fileName").is(name));
         query.addCriteria(Criteria.where("path").is(path));
 
-        return mongoTemplate.findOne(query, File.class, "File");
+        return mongoTemplate.findOne(query, File.class, collectionName);
     }
 
     public List<File> findFileInDir(String userId, String filePath) {
         Query query = new Query();
         query.addCriteria(Criteria.where("userId").is(userId));
-//        query.addCriteria(Criteria.where("isDirectory").is(true));
-//        query.addCriteria(Criteria.where("fileName").is(fileName));
         query.addCriteria(Criteria.where("path").is(filePath));
-        return mongoTemplate.find(query, File.class, "File");
+        return mongoTemplate.find(query, File.class, collectionName);
+    }
+
+    @Transactional
+    public void updateFilePathByFileId(String filePath, String fileId) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("fileId").is(fileId));
+        Update update = new Update();
+        update.set("path", filePath);
+        mongoTemplate.updateFirst(query, update, File.class, collectionName);
+    }
+
+    @Transactional
+    public void createUserRootDirectory(File file) {
+        mongoTemplate.insert(file, collectionName);
+    }
+
+    public File getRootId(String userId) {
+        Query query = new Query();
+
+        query.addCriteria(Criteria.where("userId").is(userId));
+
+        return mongoTemplate.findOne(query, File.class, collectionName);
+    }
+
+    @Transactional
+    public void addParentId(String id) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("id").is(id));
+
+        Update update = new Update();
+        ArrayList<String> list = new ArrayList<>();
+        list.add(id);
+        update.set("parent", list);
+        mongoTemplate.updateFirst(query, update, File.class, collectionName);
     }
 }
