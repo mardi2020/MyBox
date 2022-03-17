@@ -110,12 +110,10 @@ public class FileController {
             Long userMaxSize = user.getMaxSize() / (1024 * 1024);
 //            List<File> fileList = fileService.findFileAllByUserId(email);
             List<File> fileList = fileService.findFileIndir(email, path);
-            List<File> folderList = fileService.findFolderAll(email);
 
             model.addAttribute("MaxSize", userMaxSize);
             model.addAttribute("CurrentSize", userCurrentSize);
             model.addAttribute("fileList", fileList);
-            model.addAttribute("folderList", folderList);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -109,7 +109,7 @@ public class UserService implements UserDetailsService {
 
         File rootDirectory = fileRepository.getRootId(email);
         System.out.println("rootDirectory = " + rootDirectory);
-        String id = rootDirectory.getId().toHexString();
+        String id = rootDirectory.getId();
         fileRepository.addParentId(id);
     }
 
@@ -208,6 +208,9 @@ public class UserService implements UserDetailsService {
         String password = userLoginDto.getPassword();
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         User targetUser = userRepository.getUserByEmail(email);
+        if(targetUser == null) {
+            throw new Exception("없는 아이디입니다.");
+        }
 
         if (passwordEncoder.matches(password, targetUser.getPassword())) {
             session.setAttribute("user", targetUser);

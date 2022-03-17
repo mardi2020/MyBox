@@ -8,7 +8,7 @@ import org.springframework.data.annotation.Id;
 public class FileUpdateDto {
 
     @Id
-    private ObjectId id;
+    private String id;
 
     private String fileName;
 }

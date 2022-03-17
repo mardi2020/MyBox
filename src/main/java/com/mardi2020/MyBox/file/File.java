@@ -14,7 +14,7 @@ import java.util.List;
 public class File {
 
     @Id
-    private ObjectId id; // ObjectId
+    private String id; // ObjectId
 
     private String fileName;
 

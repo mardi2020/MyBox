@@ -31,6 +31,20 @@ public class UserRestController {
 
         return responseEntity;
     }
+    @RequestMapping(value = "", method = RequestMethod.GET)
+    public ResponseEntity loginUserIdGET(HttpSession session) {
+        ResponseEntity<LoginedUserDto> responseEntity = null;
+        try {
+            User user = (User) session.getAttribute("user");
+            LoginedUserDto loginedUserDto = new LoginedUserDto();
+            loginedUserDto.setEmail(user.getEmail());
+            loginedUserDto.setUserName(user.getUserName());
+            responseEntity = new ResponseEntity<>(loginedUserDto, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return responseEntity;
+    }
 
     @RequestMapping(value = "", method = RequestMethod.DELETE)
     public ResponseEntity deleteUser(HttpSession session) {
@@ -84,6 +98,7 @@ public class UserRestController {
     @RequestMapping(value = "/password/find", method = RequestMethod.POST)
     public void findPasswordPOST(@RequestBody User user, HttpServletResponse response) {
         try {
+            System.out.println("user = " + user);
             userService.findPassword(user, response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,5 +112,19 @@ public class UserRestController {
         } catch(Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @RequestMapping(value="/myInfo", method = RequestMethod.GET)
+    public ResponseEntity<?> userInformationGET(HttpSession session) {
+        ResponseEntity<User> responseEntity = null;
+        try {
+            User user = (User) session.getAttribute("user");
+            User targetUser = userService.getUserByEmail(user.getEmail());
+            responseEntity = new ResponseEntity<>(targetUser, HttpStatus.OK);
+
+        }catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return responseEntity;
     }
 }

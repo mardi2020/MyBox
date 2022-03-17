@@ -104,11 +104,11 @@ public class FileService {
 
         if(filePath.charAt(0) == '/'){
             File target = fileRepository.findFileByPathAndName(newFilePath.toString(), fileName);
-            children.add(target.getId().toHexString());
+            children.add(target.getId());
         }
         else{
             File target = fileRepository.findFileByPathAndName(filePath, fileName);
-            children.add(target.getId().toHexString());
+            children.add(target.getId());
         }
 
         fileRepository.updateNearestParentChildList(parentId, children);
@@ -169,19 +169,21 @@ public class FileService {
         List<String> children = parent.getChildren();
         if(filePath.charAt(0) == '/'){
             File target = fileRepository.findFileByPathAndName(newFilePath.toString(), folderName);
-            children.add(target.getId().toHexString());
+            children.add(target.getId());
         }
         else{
             File target = fileRepository.findFileByPathAndName(filePath, folderName);
-            children.add(target.getId().toHexString());
+            children.add(target.getId());
         }
 
         fileRepository.updateNearestParentChildList(parentId, children);
 
     }
 
-    public List<File> findFolderAll(String userId) {
-        return fileRepository.findFolderAll(userId);
+    public String findFolderAll(String userId, String path) {
+        File file = fileRepository.findPathId(userId, path);
+        System.out.println("Find file = " + file);
+        return file.getId();
     }
 
     /**
@@ -202,7 +204,7 @@ public class FileService {
         for (File file : files) {
             for (String id : file.getParent()) {
                 if(id.equals(objectId)) {
-                    deleteFileFromDB(file.getId().toHexString());
+                    deleteFileFromDB(file.getId());
                     break;
                 }
             }
@@ -234,5 +236,12 @@ public class FileService {
     }
 
 
+    public File findFileIdByPath(String name, String path) {
+        return fileRepository.findFileByPathAndName(path, name);
+    }
 
+    public String getRootId(String email) {
+        File file = fileRepository.getRootId2(email);
+        return file.getId();
+    }
 }

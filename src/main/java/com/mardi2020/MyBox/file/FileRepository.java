@@ -25,12 +25,13 @@ public class FileRepository {
         return mongoTemplate.findAll(File.class, collectionName);
     }
 
-    public List<File> findFolderAll(String userId) {
+    public File findPathId(String userId, String path) {
         Query query = new Query();
         query.addCriteria(Criteria.where("isDirectory").is(true));
+        query.addCriteria(Criteria.where("path").is(path));
         query.addCriteria(Criteria.where("userId").is(userId));
 
-        return mongoTemplate.find(query, File.class, collectionName);
+        return mongoTemplate.findOne(query, File.class, collectionName);
     }
 
     public List<File> findFileAllByUserId(String userId) {
@@ -156,4 +157,12 @@ public class FileRepository {
         update.set("parent", list);
         mongoTemplate.updateFirst(query, update, File.class, collectionName);
     }
+
+    public File getRootId2(String email){
+        Query query = new Query();
+        query.addCriteria(Criteria.where("isRoot").is(true));
+        query.addCriteria(Criteria.where("userId").is(email));
+        return mongoTemplate.findOne(query, File.class, collectionName);
+    }
+
 }

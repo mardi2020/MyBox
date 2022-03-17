@@ -16,5 +16,5 @@ public class FilesResponseDto {
 
     List<File> files = new ArrayList<>();
 
-    List<File> directories = new ArrayList<>();
+    private List<String> parentIds = new ArrayList<>();
 }
