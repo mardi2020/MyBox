@@ -62,6 +62,9 @@
     <hr>
 
     <div>
+        <div>
+            <label>이름 수정</label>
+        </div>
         <table>
             <thead>
             <th>파일이름</th>
@@ -70,6 +73,7 @@
             <th>다운로드</th>
             <th>삭제</th>
             <th>이름 수정</th>
+            <th>파일 옮기기</th>
             </thead>
             <tbody>
             <tr th:each="file : ${fileList}">
@@ -97,8 +101,16 @@
                     <div class="row">
                     <form th:action="@{'/updateFileName/{objectId}'(objectId=${file.id})}" th:object="${updateFile}" th:method="post">
                         <input type="text" name="fileName">
-                        <button type="submit">이름 바꾸기</button>
+                        <button type="submit">변경</button>
                     </form>
+                    </div>
+                </td>
+                <td th:if="${file.isDirectory} == false">
+                    <div class="row">
+                        <form th:action="@{'/updateFileName/{objectId}'(objectId=${file.id})}" th:object="${updateFile}" th:method="post">
+                            <input type="text" name="fileName">
+                            <button type="submit">변경</button>
+                        </form>
                     </div>
                 </td>
             </tr>
